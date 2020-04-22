@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
+import getpass
 import logging
 import os
 from pathlib import Path
 
 import click
-import kaggle
+try:
+    import kaggle
+except OSError:
+    print("Kaggle API's credential required")
+    username = input("kaggle username : ")
+    key = getpass.getpass("kaggle API key : ")
+    os.environ['KAGGLE_USERNAME'] = username
+    os.environ['KAGGLE_KEY'] = key
+    import kaggle
 
 DATASET_NAME = "olistbr/brazilian-ecommerce"
 
@@ -37,6 +46,12 @@ def init_data_dir(project_dir):
         logger.info('already exists')
 
 
+def fetch_data(input_filepath):
+    logger = logging.getLogger(__name__)
+    logger.info('Making the dataset.')
+    download_dataset(DATASET_NAME, output_filepath=input_filepath)
+
+
 @click.command()
 @click.argument('input_filepath', type=click.Path())
 @click.argument('output_filepath', type=click.Path())
@@ -45,13 +60,8 @@ def main(input_filepath, output_filepath):
         cleaned data ready to be analyzed (saved in ../processed).
     """
     logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
-
-
-def make_data(input_filepath):
-    logger = logging.getLogger(__name__)
-    logger.info('Making the dataset.')
-    download_dataset(DATASET_NAME, output_filepath=input_filepath)
+    logger.info('downloading data...')
+    fetch_data(input_filepath)
 
 
 if __name__ == '__main__':
