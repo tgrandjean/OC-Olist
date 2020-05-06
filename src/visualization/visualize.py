@@ -1,13 +1,21 @@
+"""This file contains some functions to create visualizations in the project.
+"""
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
-from scipy.cluster.hierarchy import dendrogram
 
 sns.set()
 
 
-def distplot(series):
+def distplot(series, **kwargs):
+    """Create a figure with two subplots.
+    The lower part of the figure is distplot and the upper part display
+    a box plot for the same sample.
+
+    :arg:
+        series (pd.Series): The sample you want to plot.
+        kwargs : all keyword argument accepted by seaborn.distplot.
+    """
     # Cut the window in 2 parts
     kwrgs = {"height_ratios": (.15, .85)}
     f, (ax_box, ax_hist) = plt.subplots(2, sharex=True, figsize=(8, 8),
@@ -15,7 +23,7 @@ def distplot(series):
 
     # Add a graph in each part
     sns.boxplot(series, ax=ax_box)
-    sns.distplot(series, ax=ax_hist)
+    sns.distplot(series, ax=ax_hist, **kwargs)
 
     # Remove x axis name for the boxplot
     ax_box.set(xlabel='')
@@ -23,8 +31,14 @@ def distplot(series):
 
 
 def piechart(series):
+    """Create piechart from series.
 
-    f, ax = plt.subplots(1, figsize=(5, 5))
+    :args:
+        series (pandas.Series) : The sample you want to plot. (must be a
+        categorial variable)
+    """
+
+    f, ax = plt.subplots(1, figsize=(8, 8))
 
     modal = series.value_counts().to_dict()
     labels = [x for x in modal.keys()]
@@ -37,23 +51,26 @@ def piechart(series):
     plt.show()
 
 
-def barplot(series, normalize=False):
-
-    f, ax = plt.subplots(1, figsize=(8, 8))
-
-    modal = series.value_counts().to_dict()
-    labels = [x for x in modal.keys()]
-    sizes = np.array([x for x in modal.values()])
-    if normalize:
-        sizes = (sizes / sum(sizes)) * 100
-
-    ax.bar(labels, sizes)
-    # ax.set_xticks(range(int(max(labels) + 1)))
-
-    plt.show()
+# def barplot(series, normalize=False):
+#     """
+#     """
+#
+#     f, ax = plt.subplots(1, figsize=(8, 8))
+#
+#     modal = series.value_counts().to_dict()
+#     labels = [x for x in modal.keys()]
+#     sizes = np.array([x for x in modal.values()])
+#     if normalize:
+#         sizes = (sizes / sum(sizes)) * 100
+#
+#     ax.bar(labels, sizes)
+#     # ax.set_xticks(range(int(max(labels) + 1)))
+#
+#     plt.show()
 
 
 def group_repartition(df, column='group', ax=None):
+    """Create a barchart to show groups's headcount."""
     count = df.groupby(column).count()\
         .sort_values(by='group').to_dict()['index']
     if not ax:
@@ -65,11 +82,8 @@ def group_repartition(df, column='group', ax=None):
 
 
 def group_composition(df, column='group', ax=None):
+    """Create a heatmap to show groups's composition."""
     df = df.copy()
-    # col_to_log = ['monetary', 'clothing', 'food',
-    #               'high-tech', 'home', 'other']
-    # for col in col_to_log:
-    #     df[col] = df[col].apply(np.expm1)
 
     means = df.groupby(column).mean()
     scaled_means = means.copy()
@@ -85,29 +99,10 @@ def group_composition(df, column='group', ax=None):
     return ax
 
 
-def plot_dendrogram(model, **kwargs):
-    # Create linkage matrix and then plot the dendrogram
-
-    # create the counts of samples under each node
-    counts = np.zeros(model.children_.shape[0])
-    n_samples = len(model.labels_)
-    for i, merge in enumerate(model.children_):
-        current_count = 0
-        for child_idx in merge:
-            if child_idx < n_samples:
-                current_count += 1  # leaf node
-            else:
-                current_count += counts[child_idx - n_samples]
-        counts[i] = current_count
-
-    linkage_matrix = np.column_stack([model.children_, model.distances_,
-                                      counts]).astype(float)
-
-    # Plot the corresponding dendrogram
-    dendrogram(linkage_matrix, **kwargs)
-
-
 def group_analysis(df, column='group'):
+    """Create a figure with two subplots.
+    On the left we show the group composition and the right we show the
+    group repartition."""
     df.sort_values(list(df.columns.values[1:-1]), inplace=True, ascending=True)
     kwargs = {'width_ratios': (0.7, 0.3)}
     f, (ax_heatmap, ax_bar) = plt.subplots(1, 2, sharey=True,

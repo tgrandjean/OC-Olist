@@ -1,4 +1,9 @@
+"""This file contains only a dict to merge all categories in
+only five.
 
+usage:
+from categories import categ
+"""
 
 categ = {
     'health_beauty': 'other',

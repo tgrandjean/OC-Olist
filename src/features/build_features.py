@@ -16,13 +16,15 @@ def load_data(data_path):
 
 
 def customer_table(data):
-    """Return datframe all customers."""
+    """Return dataframe with all customers."""
     customers = data['olist_customers_dataset'].copy()
     customers = customers[['customer_unique_id']].reset_index(drop=True)
     return customers
 
 
 def customers_mapper(data):
+    """Return a dict containing customer_id as key and
+    customer_unique_id as values."""
     customers = data['olist_customers_dataset'].copy()
     customers = customers[['customer_unique_id', 'customer_id']]
     customers.set_index('customer_id', inplace=True, drop=True)
@@ -30,6 +32,8 @@ def customers_mapper(data):
 
 
 def orders_mapper(orders):
+    """Return a dict containing order_id as  key and customer_unique_id
+    as values."""
     return orders[['customer_unique_id', 'order_id']]\
            .set_index('order_id', drop=True)\
            .to_dict()['customer_unique_id']
@@ -37,6 +41,7 @@ def orders_mapper(orders):
 
 def get_orders_between_two_dates(data, date_start, date_end,
                                  on="order_purchase_timestamp"):
+    """Get all orders between two dates."""
     if (type(date_start) == str) and (type(date_end) == str):
         date_start, date_end = pd.to_datetime([date_start, date_end])
     orders = data['olist_orders_dataset']
@@ -50,6 +55,8 @@ def get_orders_between_two_dates(data, date_start, date_end,
 
 
 def frequencies(customers, orders, data):
+    """Return customers dataframe with an extra column containing
+    frequencies."""
     mapper = customers_mapper(data)
     customers = customers.copy()
     orders = orders.copy()
@@ -64,6 +71,8 @@ def frequencies(customers, orders, data):
 
 
 def recencies(customers, orders, data):
+    """Return customers dataframe with an extra column containing
+    recencies."""
     mapper = customers_mapper(data)
     customers = customers.copy()
     orders = orders.copy()
@@ -82,6 +91,8 @@ def recencies(customers, orders, data):
 
 
 def monetary(customers, orders, data):
+    """Return customers dataframe with an extra column containing
+    monetary."""
     mapper = customers_mapper(data)
     customers = customers.copy()
     orders = orders.copy()
@@ -100,6 +111,8 @@ def monetary(customers, orders, data):
 
 
 def items_per_cart(customers, orders, data):
+    """Return customers dataframe with an extra column containing
+    the average of items_per_cart for each customer."""
     mapper = customers_mapper(data)
     customers = customers.copy()
     orders = orders.copy()
@@ -118,6 +131,8 @@ def items_per_cart(customers, orders, data):
 
 
 def monetary_per_categ(customers, orders, data):
+    """Return customers dataframe with extra columns containing
+    monetary for each category."""
     mapper = customers_mapper(data)
     customers = customers.copy()
     orders = orders.copy()
@@ -128,6 +143,7 @@ def monetary_per_categ(customers, orders, data):
         .set_index('product_category_name')\
         .to_dict()['product_category_name_english']
     products['category'] = products['product_category_name'].map(translation)
+    # see src.features.categories
     products['mother_cat'] = products['category'].map(categ)
     categ_mapper = products[['product_id', 'mother_cat']]\
         .set_index('product_id').to_dict()['mother_cat']
@@ -140,6 +156,8 @@ def monetary_per_categ(customers, orders, data):
 
 
 def reviews(customers, data):
+    """Return customers dataframe with an extra column containing
+    the average for review score for each customer."""
     mapper = customers_mapper(data)
     customers = customers.copy()
     orders = data['olist_orders_dataset'].copy()
