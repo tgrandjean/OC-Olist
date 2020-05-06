@@ -167,3 +167,30 @@ def reviews(customers, data):
     reviews = reviews.groupby('customer').mean()['review_score']
     customers = customers.join(reviews)
     return customers
+
+
+def make_dataset(data, date_start, date_end):
+    """Create the dataset with all features.
+
+    :args:
+        data (dict) : dict containing all datasets.
+        date_start, date_end : lower and upper limit
+        of the dataset
+    """
+    orders = get_orders_between_two_dates(
+        data, date_start, date_end)
+    customers = customer_table(data)
+    customers = frequencies(customers, orders, data)
+    customers = recencies(customers, orders, data)
+    customers = monetary(customers, orders, data)
+    customers = items_per_cart(customers, orders, data)
+    customers = monetary_per_categ(customers, orders, data)
+    customers = reviews(customers, data)
+    customers = customers[customers['frequency'] > 0]
+    customers = customers[customers['recency'].notna()]
+    customers.fillna(0.0, inplace=True)
+    customers['recency'] = customers['recency'].apply(lambda x: x.days)
+    customers.reset_index(drop=False, inplace=True)
+    customers.drop_duplicates(inplace=True)
+    customers = customers[customers['monetary'] > 0]
+    return customers
