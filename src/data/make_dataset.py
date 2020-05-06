@@ -60,8 +60,14 @@ def main(input_filepath, output_filepath):
         cleaned data ready to be analyzed (saved in ../processed).
     """
     logger = logging.getLogger(__name__)
-    logger.info('downloading data...')
-    fetch_data(input_filepath)
+    logger.info('making final data set from raw data')
+    make_data(input_filepath)
+
+
+def make_data(input_filepath):
+    logger = logging.getLogger(__name__)
+    logger.info('Making the dataset.')
+    download_dataset(DATASET_NAME, output_filepath=input_filepath)
 
 
 if __name__ == '__main__':
